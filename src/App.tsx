@@ -1,16 +1,10 @@
-import { Calculator, Diff, Divide, Dot, Equal, Minus, Percent, Plus, X } from 'lucide-react';
+import { Calculator, Divide, Equal, Minus, Percent, Plus, X } from 'lucide-react';
 import './index.css'
 import clsx from 'clsx';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { ButtonProps } from './types';
 function App() {
-  interface Button {
-    icon?: any;
-    label?: string;
-    kind?: 'operator' | 'character';
-    action?: () => void;
-    operation?: 'addition' | 'subtraction' | 'multiplication' | 'division' | 'percentage' | 'equals' | 'decimal-point' | 'clear' | 'plus-minus' | 'delete';
-  }
-  const buttons: Button[] = [
+  const buttons: ButtonProps[] = [
     { label: 'AC', kind: 'operator', operation: 'clear' },
     { kind: 'operator', label: 'DE', operation: 'delete' },
     { icon: Percent, kind: 'operator', label: '%', operation: "percentage" },
@@ -44,13 +38,13 @@ function App() {
       .replace(/x/g, '*')
       .replace(/÷/g, '/')
   };
-  const normalizedExpression = normalizeExpression(currentValue);
+  const normalizedExpression = useMemo(() => normalizeExpression(currentValue), [currentValue]);
 
   // Calculate the expression
   const calculate = () => new Function(`return ${normalizedExpression}`)();
 
   // Handle button press
-  const handleButtonPress = (button: Button) => {
+  const handleButtonPress = (button: ButtonProps) => {
     switch (button.kind) {
       case 'character':
         if (currentValue === '0' && button.label === '0') {
@@ -59,7 +53,7 @@ function App() {
         else if (currentValue === '0' && button.label !== '0' && button.label !== '.') {
           setCurrentValue(button.label!);
         }
-        else if (button.label === '.' && operationCharacters.includes(currentValue.charAt(currentValue.length - 1))) {
+        else if ((button.label === '.' && operationCharacters.includes(currentValue.charAt(currentValue.length - 1))) || (button.label === '.' && currentValue.charAt(currentValue.length - 1) == '.')) {
           break;
         }
         else {
@@ -67,7 +61,6 @@ function App() {
         }
         break;
       case 'operator':
-
         if (button.operation === 'clear') {
           setCurrentValue('0');
           setExpression('');
@@ -114,15 +107,14 @@ function App() {
         </div>
 
         <div className="grid grid-cols-4 gap-2">
-          {buttons.map((button, index) => (
-            <button onClick={() => {
-              handleButtonPress(button)
-            }} key={index} className={clsx("rounded-full size-14 text-2xl font-medium flex items-center text-white justify-center bg-zinc-600",
-              {
-                '!bg-orange-500': index % 4 === 3,
-                '!bg-zinc-500': index < 3,
-              }
-            )}>
+          {buttons.map((button: ButtonProps, index: number) => (
+            <button onClick={() => handleButtonPress(button)}
+              key={index} className={clsx("rounded-full size-14 text-2xl font-medium flex items-center text-white justify-center bg-zinc-600",
+                {
+                  '!bg-orange-500': index % 4 === 3,
+                  '!bg-zinc-500': index < 3,
+                }
+              )}>
               {button.icon ?
                 <button.icon className='size-5 text-white' />
                 :
