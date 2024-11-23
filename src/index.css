@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.hide-scroll::-webkit-scrollbar {
+  width: 0px !important;
+  height: 0px !important;
+}
